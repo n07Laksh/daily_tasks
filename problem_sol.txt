@@ -1,0 +1,42 @@
+Problems & Solution while creating the Daily Tasks App
+
+
+Problem 1. ==> VirtualizedLists should never be nested inside plain ScrollViews 
+with the same orientation because it can break windowing and other functionality - use
+another VirtualizedList-backed container instead.
+
+Solution ==> Ok! So the FlatList is default scrollable when the parent is set flex:1
+
+--------------------------------&&&&&&&&&&&&&&&&&&&-----------------------------------
+
+Problem 2. ==> Style the nested element when it's renderd
+Solution ==> with - contentContainerStyle={{ display: "flex", gap: 20 }}.
+
+
+--------------------------------&&&&&&&&&&&&&&&&&&&-----------------------------------
+
+Problem 3. ==> get future date
+Solution ==> const dt = new Date()
+             dt.setDate(dt.getDate() + parseInt(days))
+
+
+--------------------------------&&&&&&&&&&&&&&&&&&&-----------------------------------
+
+Problem 4. ==> creating a file in phone storage to store files to access if the app
+            is uninstall
+Solution ==> for this we need react-native-fs (it's help to create a folder that will
+          not delete even after we uninstall the app) but it's not work with expo app
+          and the AsyncStorage is static with app when we delete the app data will 
+          also loose
+
+
+Problem 5. ==> want to use native react app without expo.
+Solution ==> npx expo prebuild --clean (it will change the expo code to native code)
+
+
+Problem 6. ==> new added content is not visible when navigate back
+Solution ==>  > Your useEffect runs only on mount (and when router changes).
+              > Navigating back doesn’t trigger a re-mount.
+              > Therefore, new data isn’t fetched.
+
+              > Solution: Use useFocusEffect or useIsFocused instead of useEffect

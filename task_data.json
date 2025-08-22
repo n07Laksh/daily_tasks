@@ -1,0 +1,45 @@
+[
+    {
+        "task_id": "task_001",
+        "title": "Daily_tasks",
+        "description": "Tasks for daily do.",
+        "due_date": "2025-10-15",
+        "priority": "high",
+        "interval": "daily",
+        "tasks": [
+            "1 DSA From Abdul Bari",
+            "1 LeetCode Problem",
+            "Shadow Boxing ",
+            "1 Page Book Read",
+            "1 Hour of Coding",
+            "English Speaking Practice"
+        ]
+    },
+    {
+        "task_id": "task_002",
+        "title": "Weekly tasks",
+        "description": "Tasks to do once in a week",
+        "due_date": "2025-10-20",
+        "priority": "medium",
+        "interval": "weekly",
+        "tasks": [
+            "Go For Running 1 Hour",
+            "Shampoo",
+            "Full Body Exercise ",
+            "Repeat Week Work"
+        ]
+    },
+    {
+        "task_id": "task_003",
+        "title": "Monthly Tasks",
+        "description": "Tasks do once in month",
+        "due_date": "2026-10-12",
+        "priority": "low",
+        "interval": "monthly",
+        "tasks": [
+            "Discipline Work",
+            "New Project Idea & Work",
+            "Shadow Boxing"
+        ]
+    }
+]
