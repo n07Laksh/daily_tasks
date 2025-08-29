@@ -83,7 +83,7 @@ export default function IndexScreen() {
                         console.log(e.target);
                       }}
                     /> */}
-                    <TaskMenu index={index} tasks={tasks} setTask={setTasks}/>
+                    <TaskMenu index={index} tasks={tasks} setTasks={setTasks}/>
                   </Text>
                 </Card>
               ))

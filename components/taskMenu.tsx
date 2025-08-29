@@ -17,10 +17,10 @@ interface Task {
 interface TaskMenuProps {
   index: number;
   tasks: Task[];
-  setTask: any;
+  setTasks: any;
 }
 
-const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTask }) => {
+const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
   const [visible, setVisible] = React.useState(false);
 
   const openMenu = () => setVisible(true);
@@ -30,17 +30,26 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTask }) => {
   const deleteTask = async (ind: number) => {
     let taskCopy = tasks.filter((_, i) => i !== ind);
     await AsyncStorage.setItem("tasks", JSON.stringify(taskCopy));
-    setTask(taskCopy);
+    setTasks(taskCopy);
     setVisible(false);
   };
 
   const togglePin = (ind: number) => {
+    // const updated = [...tasks].map((task, index) =>
+    //   index === ind ? { ...task, pinned: !task.pinned } : task
+    // );
+
+    // setTasks(updated);
+    // AsyncStorage.setItem("tasks", JSON.stringify(updated));
+
     const updated = [...tasks].map((task, index) =>
       index === ind ? { ...task, pinned: !task.pinned } : task
     );
-
-    setTask(updated);
-    AsyncStorage.setItem("tasks", JSON.stringify(updated));
+    const sorted = [...updated].sort(
+      (a, b) => Number(b.pinned) - Number(a.pinned)
+    );
+    setTasks(sorted);
+    AsyncStorage.setItem("tasks", JSON.stringify(sorted));
     setVisible(false);
   };
 
