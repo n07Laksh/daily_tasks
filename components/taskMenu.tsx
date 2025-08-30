@@ -35,13 +35,6 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
   };
 
   const togglePin = (ind: number) => {
-    // const updated = [...tasks].map((task, index) =>
-    //   index === ind ? { ...task, pinned: !task.pinned } : task
-    // );
-
-    // setTasks(updated);
-    // AsyncStorage.setItem("tasks", JSON.stringify(updated));
-
     const updated = [...tasks].map((task, index) =>
       index === ind ? { ...task, pinned: !task.pinned } : task
     );
@@ -51,6 +44,23 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
     setTasks(sorted);
     AsyncStorage.setItem("tasks", JSON.stringify(sorted));
     setVisible(false);
+  };
+
+  const archive = async (ind: number) => {
+    try {
+      let archived = await AsyncStorage.getItem("archived");
+      let archivedTasks = archived ? JSON.parse(archived) : [];
+
+      archivedTasks.push(tasks[ind]);
+      await AsyncStorage.setItem("archived", JSON.stringify(archivedTasks));
+
+      let taskCopy = tasks.filter((_, i) => i !== ind);
+      await AsyncStorage.setItem("tasks", JSON.stringify(taskCopy));
+      setTasks(taskCopy);
+      setVisible(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -77,7 +87,7 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
           leadingIcon="square-edit-outline"
         />
         <Menu.Item
-          onPress={() => {}}
+          onPress={() => archive(index)}
           title="Archive"
           leadingIcon="archive-arrow-down"
         />
