@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable } from "react-native";
+import { Pressable } from "react-native";
 import { Divider, Menu } from "react-native-paper";
 
 const HeaderMenu = () => {
@@ -28,10 +28,16 @@ const HeaderMenu = () => {
       <Divider />
       <Menu.Item
         onPress={() => {
-          Alert.alert("Menu", "This is the menu!");
           setVisible(false);
         }}
         title="Completed Tasks"
+      />
+      <Menu.Item
+        onPress={() => {
+          router.push("/task/archive");
+          setVisible(false);
+        }}
+        title="Archives"
       />
     </Menu>
   );

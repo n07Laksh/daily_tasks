@@ -59,6 +59,16 @@ export default function Layout() {
                         headerTitleAlign: "center",
                     }}
                 />
+                <Stack.Screen
+                    name="task/archive"
+                    options={{
+                        title: "Archived Tasks",
+                        headerStyle: { backgroundColor: "#094568ff" },
+                        headerTintColor: "#fff",
+                        headerTitleStyle: { fontWeight: "bold" },
+                        headerTitleAlign: "center",
+                    }}
+                />
             </Stack>
         </PaperProvider>
     );
