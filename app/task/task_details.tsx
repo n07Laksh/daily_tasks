@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Checkbox } from "react-native-paper";
 
 interface Task {
-  task_id: string;
+  id: string;
   title: string;
   description: string;
   due_date: string;
@@ -17,7 +17,7 @@ interface Task {
 
 export default function TaskView() {
   const [checkedItems, setCheckedItems] = useState<boolean[]>([]);
-  const { position }: any = useLocalSearchParams();
+  const { pos }: any = useLocalSearchParams();
   const [tasks, setTasks] = useState<Task>();
 
   const handleCheckbox = async (index: number) => {
@@ -29,7 +29,7 @@ export default function TaskView() {
       return newCheckedItems;
     });
     if (tasks) {
-      await AsyncStorage.setItem(tasks.title, JSON.stringify(checkItm));
+      await AsyncStorage.setItem(tasks.id, JSON.stringify(checkItm));
     }
   };
 
@@ -37,22 +37,22 @@ export default function TaskView() {
     let getTask = async () => {
       let tasks = await AsyncStorage.getItem("tasks");
       let parsedTask = tasks ? JSON.parse(tasks) : [];
-      setTasks(parsedTask[position]);
+      setTasks(parsedTask[pos]);
     };
     getTask();
-  }, [position]);
+  }, [pos]);
 
   useEffect(() => {
     let getCheckTasks = async () => {
       if (tasks) {
-        let checkedStore = await AsyncStorage.getItem(tasks.title);
+        let checkedStore = await AsyncStorage.getItem(tasks.id);
         let parsedCheked = checkedStore ? JSON.parse(checkedStore) : null;
         if (parsedCheked) {
           setCheckedItems(parsedCheked);
         } else {
           let checkedVal = Array(tasks.tasks.length).fill(false);
           setCheckedItems(checkedVal);
-          await AsyncStorage.setItem(tasks.title, JSON.stringify(checkedVal));
+          await AsyncStorage.setItem(tasks.id, JSON.stringify(checkedVal));
         }
       }
     };

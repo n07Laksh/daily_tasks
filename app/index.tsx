@@ -16,7 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useState } from "react";
 
 interface Task {
-  task_id: string;
+  id: string;
   title: string;
   description: string;
   due_date: string;
@@ -34,10 +34,17 @@ export default function IndexScreen() {
     useCallback(() => {
       const getTask = async () => {
         const tasks = await AsyncStorage.getItem("tasks");
-        let parsedTasks = tasks?JSON.parse(tasks): [];
-        let sortedTasks = parsedTasks.sort((a:any, b:any) => Number(b.pinned) - Number(a.pinned));
+        let parsedTasks = tasks ? JSON.parse(tasks) : [];
+        let sortedTasks = parsedTasks.sort(
+          (a: any, b: any) => Number(b.pinned) - Number(a.pinned)
+        );
 
         setTasks(sortedTasks);
+
+        if(parsedTasks.length === 0) {
+          await AsyncStorage.removeItem("TaskCount");
+          await AsyncStorage.removeItem("tasks");
+        }
       };
       getTask();
     }, [])
@@ -61,29 +68,21 @@ export default function IndexScreen() {
                   style={styles.content_container_child}
                   onPress={() =>
                     router.push(
-                      `/task/task_details?task_id=${item.task_id}&position=${index}`
+                      `/task/task_details?task_id=${item.id}&pos=${index}`
                     )
                   }
                   onLongPress={() =>
                     Alert.alert("View Task", "Click to view task details")
                   }
                 >
-                  <Card.Title
-                    title={capitalize(item.title)}
-                    subtitle={capitalize(item.description)}
-                  />
+                  <View style={{ maxWidth: "90%", width:"90%" }}>
+                    <Card.Title
+                      title={capitalize(item.title)}
+                      subtitle={capitalize(item.description)}
+                    />
+                  </View>
                   <Text>
-                    {/* <Entypo
-                      name="dots-three-vertical"
-                      size={24}
-                      color="black"
-                      onPress={(e) => {
-                        e.preventDefault();
-                        Alert.alert("something happend");
-                        console.log(e.target);
-                      }}
-                    /> */}
-                    <TaskMenu index={index} tasks={tasks} setTasks={setTasks}/>
+                    <TaskMenu index={index} tasks={tasks} setTasks={setTasks} />
                   </Text>
                 </Card>
               ))

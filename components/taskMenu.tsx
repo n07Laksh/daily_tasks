@@ -1,11 +1,12 @@
 import { Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
 import * as React from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import { Divider, Menu } from "react-native-paper";
 
 interface Task {
-  task_id: string;
+  id: string;
   title: string;
   description: string;
   due_date: string;
@@ -21,6 +22,7 @@ interface TaskMenuProps {
 }
 
 const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
+  const router = useRouter();
   const [visible, setVisible] = React.useState(false);
 
   const openMenu = () => setVisible(true);
@@ -30,6 +32,7 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
   const deleteTask = async (ind: number) => {
     let taskCopy = tasks.filter((_, i) => i !== ind);
     await AsyncStorage.setItem("tasks", JSON.stringify(taskCopy));
+    await AsyncStorage.removeItem(tasks[ind].id);
     setTasks(taskCopy);
     setVisible(false);
   };
@@ -76,13 +79,15 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
             onPress={(e) => {
               e.preventDefault();
               openMenu();
-              Alert.alert("something happend");
             }}
           />
         }
       >
         <Menu.Item
-          onPress={() => {}}
+          onPress={() => {
+            router.push(`/task/edit_task?task_id=${tasks[index].id}&pos=${index}`);
+            setVisible(false);
+          }}
           title="Edit"
           leadingIcon="square-edit-outline"
         />
