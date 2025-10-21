@@ -13,7 +13,7 @@ import {
 } from "react-native-paper";
 import { capitalize } from "../../utility_functions/capatilize";
 
-export default function TaskForm() {
+export default function TaskForm({ index }: { index: any }) {
   const router = useRouter();
   const [taskObj, setTaskObj] = React.useState({
     title: "",
@@ -44,34 +44,59 @@ export default function TaskForm() {
   };
 
   const handleSave = async () => {
-    let result = await AsyncStorage.getItem("tasks");
-    let parseResult = result ? JSON.parse(result) : [];
+    let stTasks = await AsyncStorage.getItem("tasks");
+    let taskCount = await AsyncStorage.getItem("TaskCount");
+    let parseResult = stTasks ? JSON.parse(stTasks) : [];
+    let taskCountNum: number = parseInt(taskCount ? taskCount : "0");
+
+    if (setTaskList.length === 0) {
+      Alert.alert("Error", "Add some tasks first!");
+      return;
+    }
+    if (!taskObj.title || !taskObj.desc || !taskObj.days || !taskObj.interval) {
+      Alert.alert("Error", "All fields are required!");
+      return;
+    }
 
     let priority = taskObj.interval === "day" ? "high" : "low";
     let dt = new Date();
     dt.setDate(dt.getDate() + parseInt(taskObj.days));
 
     let data = {
+      id: taskCountNum + 1,
       title: taskObj.title,
       description: taskObj.desc,
       due_date: dt,
       priority: priority,
       tasks: taskList,
       pinned: false,
+      interval: taskObj.interval,
     };
-
-    let tasks = [data, ...parseResult];
     try {
-      await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+      if (index !== undefined) {
+        let taskList = parseResult.filter(
+          (_: any, ind: number) => ind !== Number(index)
+        );
+        let tasks = [data, ...taskList];
+        await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+      } else {
+        let tasks = [data, ...parseResult];
+        await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+      }
+      await AsyncStorage.setItem("TaskCount", (taskCountNum + 1).toString());
       setTaskObj({ title: "", desc: "", days: "", interval: "" });
       setTaskList([]);
-
       router.back();
     } catch (error) {
       Alert.alert("Save Error", String(error));
     } finally {
       Alert.alert("Saved!", "Task saved in memory.");
     }
+  };
+
+  const removeItem = (ind: number) => () => {
+    let filtered = taskList.filter((_, index) => index !== ind);
+    setTaskList(filtered);
   };
 
   useEffect(() => {
@@ -85,6 +110,44 @@ export default function TaskForm() {
       setSaveButton(false);
     }
   }, [taskObj, taskList]);
+
+  useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        let tasks = await AsyncStorage.getItem("tasks");
+        let parsedTasks = tasks ? JSON.parse(tasks) : [];
+
+        let task = parsedTasks[index];
+        if (task) {
+          setTaskObj({
+            title: task.title,
+            desc: task.description,
+            days: Math.ceil(
+              (new Date(task.due_date).getTime() - new Date().getTime()) /
+                (1000 * 3600 * 24)
+            ).toString(),
+            interval: task.interval || "",
+          });
+          setTaskList(task.tasks || []);
+        }
+      } catch (error) {
+        console.log("Error fetching tasks:", error);
+      }
+    };
+    if (index !== undefined) fetchTask();
+  }, [index]);
+
+  useEffect(() => {
+    const getTaskCount = async () => {
+      let taskCount = await AsyncStorage.getItem("TaskCount");
+      let taskCountNum = taskCount ? parseInt(taskCount) : 0;
+      if (taskCountNum === 0) {
+        await AsyncStorage.setItem("TaskCount", "0");
+      }
+    };
+    getTaskCount();
+  }, []);
+
   return (
     <>
       <ScrollView contentContainerStyle={{ marginBottom: 20 }}>
@@ -155,10 +218,7 @@ export default function TaskForm() {
                   </HelperText>
                 )}
               </View>
-              <Button
-                mode="contained"
-                onPress={() => addTask()}
-              >
+              <Button mode="contained" onPress={() => addTask()}>
                 Add
               </Button>
             </View>
@@ -222,8 +282,13 @@ export default function TaskForm() {
                 taskList.map((item, index) => (
                   <View style={styles.task_list} key={index}>
                     {/* <Text>{`\u2022' ${capitalize(item)}`}</Text> */}
-                    <Text>{`•  ${capitalize(item)}`}</Text>
-                    <Ionicons name="close" size={20} color="black" />
+                    <Text>{`${capitalize(item)}`}</Text>
+                    <Ionicons
+                      onPress={removeItem(index)}
+                      name="close"
+                      size={20}
+                      color="black"
+                    />
                   </View>
                 ))}
             </View>
@@ -248,7 +313,7 @@ export default function TaskForm() {
             padding: 10,
           }}
         >
-          Save
+          {index ? "Update Task" : "Save Task"}
         </Text>
       </Pressable>
     </>
@@ -310,7 +375,7 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   task_list: {
-    backgroundColor: "gray",
+    backgroundColor: "#09456812",
     padding: 10,
     borderRadius: 10,
     flex: 1,

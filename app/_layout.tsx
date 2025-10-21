@@ -69,6 +69,16 @@ export default function Layout() {
                         headerTitleAlign: "center",
                     }}
                 />
+                <Stack.Screen
+                    name="task/edit_task"
+                    options={{
+                        title: "Edit Task",
+                        headerStyle: { backgroundColor: "#094568ff" },
+                        headerTintColor: "#fff",
+                        headerTitleStyle: { fontWeight: "bold" },
+                        headerTitleAlign: "center",
+                    }}
+                />
             </Stack>
         </PaperProvider>
     );
