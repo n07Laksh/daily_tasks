@@ -2,6 +2,7 @@ import { Entypo } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as React from "react";
 import { Divider, Menu } from "react-native-paper";
+import { Text } from "react-native";
 
 interface Task {
   task_id: string;
@@ -19,7 +20,11 @@ interface TaskMenuProps {
   setTasks: any;
 }
 
-export default function ArchivedTaskMenu({ index, tasks, setTasks }: TaskMenuProps) {
+export default function ArchivedTaskMenu({
+  index,
+  tasks,
+  setTasks,
+}: TaskMenuProps) {
   const [visible, setVisible] = React.useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
@@ -75,6 +80,8 @@ export default function ArchivedTaskMenu({ index, tasks, setTasks }: TaskMenuPro
           onPress={() => deleteTask(index)}
           title="Delete"
           leadingIcon="delete"
+          titleStyle={{ color: "red" }}
+          theme={{ colors: { onSurfaceVariant: "red" } }}
         />
       </Menu>
     </>

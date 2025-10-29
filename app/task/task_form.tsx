@@ -11,9 +11,12 @@ import {
   Text,
   TextInput,
 } from "react-native-paper";
-import { capitalize } from "../../utility_functions/capatilize";
 
-export default function TaskForm({ index }: { index: any }) {
+//@ local components and utility functions
+import { capitalize } from "../../utility_functions/capatilize";
+import { Task } from "@/app/types/types";
+
+export default function TaskForm({ id }: { id?: number }) {
   const router = useRouter();
   const [taskObj, setTaskObj] = React.useState({
     title: "",
@@ -46,8 +49,11 @@ export default function TaskForm({ index }: { index: any }) {
   const handleSave = async () => {
     let stTasks = await AsyncStorage.getItem("tasks");
     let taskCount = await AsyncStorage.getItem("TaskCount");
-    let parseResult = stTasks ? JSON.parse(stTasks) : [];
-    let taskCountNum: number = parseInt(taskCount ? taskCount : "0");
+    let parsedCount = parseInt(taskCount || "0");
+    let parseResult: Task[] = stTasks ? JSON.parse(stTasks) : [];
+    let found = parseResult.find((task) => task.id === id);
+
+    let taskCountNum: number = found ? found.id : parsedCount + 1;
 
     if (setTaskList.length === 0) {
       Alert.alert("Error", "Add some tasks first!");
@@ -62,28 +68,31 @@ export default function TaskForm({ index }: { index: any }) {
     let dt = new Date();
     dt.setDate(dt.getDate() + parseInt(taskObj.days));
 
-    let data = {
-      id: taskCountNum + 1,
+    let data: Task = {
+      id: taskCountNum,
       title: taskObj.title,
       description: taskObj.desc,
-      due_date: dt,
+      due_date: (dt as Date).toISOString(),
       priority: priority,
       tasks: taskList,
       pinned: false,
       interval: taskObj.interval,
+      modified_at: new Date().toISOString(),
     };
     try {
-      if (index !== undefined) {
-        let taskList = parseResult.filter(
-          (_: any, ind: number) => ind !== Number(index)
-        );
-        let tasks = [data, ...taskList];
-        await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+      if (id !== undefined) {
+        let updated = parseResult.map((task) =>(
+          task.id === id ? data : task
+        ))
+        await AsyncStorage.setItem("tasks", JSON.stringify(updated));
       } else {
-        let tasks = [data, ...parseResult];
-        await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+        parseResult.push(data);
+        await AsyncStorage.setItem("tasks", JSON.stringify(parseResult));
       }
-      await AsyncStorage.setItem("TaskCount", (taskCountNum + 1).toString());
+      await AsyncStorage.setItem(
+        "TaskCount",
+        id ? parsedCount.toString() : (parsedCount + 1).toString()
+      );
       setTaskObj({ title: "", desc: "", days: "", interval: "" });
       setTaskList([]);
       router.back();
@@ -117,7 +126,8 @@ export default function TaskForm({ index }: { index: any }) {
         let tasks = await AsyncStorage.getItem("tasks");
         let parsedTasks = tasks ? JSON.parse(tasks) : [];
 
-        let task = parsedTasks[index];
+        // let task = parsedTasks.find((task) => task.id === id);
+        let task = parsedTasks.find((task:Task) => (task.id === id));
         if (task) {
           setTaskObj({
             title: task.title,
@@ -134,8 +144,8 @@ export default function TaskForm({ index }: { index: any }) {
         console.log("Error fetching tasks:", error);
       }
     };
-    if (index !== undefined) fetchTask();
-  }, [index]);
+    if (id !== undefined) fetchTask();
+  }, [id]);
 
   useEffect(() => {
     const getTaskCount = async () => {
@@ -313,7 +323,7 @@ export default function TaskForm({ index }: { index: any }) {
             padding: 10,
           }}
         >
-          {index ? "Update Task" : "Save Task"}
+          {id ? "Update Task" : "Save Task"}
         </Text>
       </Pressable>
     </>

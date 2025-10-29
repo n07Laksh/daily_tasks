@@ -38,5 +38,16 @@ Problem 6. ==> new added content is not visible when navigate back
 Solution ==>  > Your useEffect runs only on mount (and when router changes).
               > Navigating back doesn’t trigger a re-mount.
               > Therefore, new data isn’t fetched.
-
               > Solution: Use useFocusEffect or useIsFocused instead of useEffect
+
+
+Problem 7. ==> after updating yarn 1.22.xx to yarn 4.9.0 i got error about expo cli not working and other errors
+Solution ==> added a .yarnrc.yml yarn configuration file and add nodeLinger : node-moudles 
+
+
+Problem 8. ==> localStorage key type error
+Solution ==>  [AsyncStorage] Using number type for key is not supported. This can lead to unexpected behavior/errors. 
+              Use string instead.
+
+
+
