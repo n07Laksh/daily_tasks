@@ -1,71 +1,77 @@
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as React from "react";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { Divider, Menu } from "react-native-paper";
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  due_date: string;
-  priority: string;
-  interval: string;
-  tasks: string[];
-  pinned?: boolean;
-}
+import { Task } from "@/app/types/types"; // Importing Task interface
 interface TaskMenuProps {
-  index: number;
+  id: number;
   tasks: Task[];
-  setTasks: any;
+  refreshTask: any;
 }
 
-const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
+const TaskMenu: React.FC<TaskMenuProps> = ({
+  id,
+  tasks,
+  refreshTask,
+}) => {
   const router = useRouter();
   const [visible, setVisible] = React.useState(false);
 
   const openMenu = () => setVisible(true);
-
   const closeMenu = () => setVisible(false);
 
-  const deleteTask = async (ind: number) => {
-    let taskCopy = tasks.filter((_, i) => i !== ind);
+  const deleteTask = async (id: number) => {
+    let taskCopy = tasks.filter((item, i) => item.id !== id);
     await AsyncStorage.setItem("tasks", JSON.stringify(taskCopy));
-    await AsyncStorage.removeItem(tasks[ind].id);
-    setTasks(taskCopy);
+
+    // task deletion from checked/unchecked storage
+    let checkedTasks = await AsyncStorage.getItem("checkedTask");
+    let parsedTasks = checkedTasks ? JSON.parse(checkedTasks) : {};
+    delete parsedTasks[id];
+    await AsyncStorage.setItem("checkedTask", JSON.stringify(parsedTasks));
+
+    refreshTask();
     setVisible(false);
   };
 
-  const togglePin = (ind: number) => {
-    const updated = [...tasks].map((task, index) =>
-      index === ind ? { ...task, pinned: !task.pinned } : task
+  const togglePin = (id: number) => {
+    const updated = [...tasks].map((task) =>
+      task.id === id
+        ? {
+            ...task,
+            pinned: !task.pinned,
+            modified_at: new Date().toISOString(),
+          }
+        : task
     );
-    const sorted = [...updated].sort(
-      (a, b) => Number(b.pinned) - Number(a.pinned)
-    );
-    setTasks(sorted);
-    AsyncStorage.setItem("tasks", JSON.stringify(sorted));
+
+    AsyncStorage.setItem("tasks", JSON.stringify(updated));
+    refreshTask();
     setVisible(false);
   };
 
-  const archive = async (ind: number) => {
+  const archive = async (id: number) => {
     try {
       let archived = await AsyncStorage.getItem("archived");
       let archivedTasks = archived ? JSON.parse(archived) : [];
 
-      archivedTasks.push(tasks[ind]);
+      // pushing the task to be archived into archived tasks array and updating storage
+      let found = [...tasks].find((task) => task.id === id);
+      if (found) archivedTasks.push(found);
       await AsyncStorage.setItem("archived", JSON.stringify(archivedTasks));
 
-      let taskCopy = tasks.filter((_, i) => i !== ind);
+      // removing the task from main tasks array and updating storage
+      let taskCopy = tasks.filter((task) => task.id !== id);
       await AsyncStorage.setItem("tasks", JSON.stringify(taskCopy));
-      setTasks(taskCopy);
+      refreshTask();
       setVisible(false);
     } catch (error) {
       console.log(error);
     }
   };
-
   return (
     <View>
       <Menu
@@ -75,7 +81,7 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
           <Entypo
             name="dots-three-vertical"
             size={24}
-            color="black"
+            color="#094568"
             onPress={(e) => {
               e.preventDefault();
               openMenu();
@@ -85,27 +91,109 @@ const TaskMenu: React.FC<TaskMenuProps> = ({ index, tasks, setTasks }) => {
       >
         <Menu.Item
           onPress={() => {
-            router.push(`/task/edit_task?task_id=${tasks[index].id}&pos=${index}`);
+            router.push(`/task/edit_task?task_id=${id}`);
             setVisible(false);
           }}
-          title="Edit"
-          leadingIcon="square-edit-outline"
+          title={
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <MaterialCommunityIcons
+                name="square-edit-outline"
+                size={24}
+                color="#094568"
+              />
+              <Text
+                style={{
+                  color: "#094568",
+                  marginLeft: 8,
+                  fontSize: 17,
+                  textAlign: "center",
+                }}
+              >
+                Edit
+              </Text>
+            </View>
+          }
         />
         <Menu.Item
-          onPress={() => archive(index)}
-          title="Archive"
-          leadingIcon="archive-arrow-down"
+          onPress={() => archive(id)}
+          title={
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <MaterialCommunityIcons
+                // name="square-edit-outline"
+                name="archive-arrow-down"
+                size={24}
+                color="#094568"
+              />
+              <Text
+                style={{
+                  color: "#094568",
+                  marginLeft: 8,
+                  fontSize: 17,
+                  textAlign: "center",
+                }}
+              >
+                Archive
+              </Text>
+            </View>
+          }
         />
         <Menu.Item
-          onPress={() => togglePin(index)}
-          title={tasks[index].pinned ? "Unpin" : "Pin"}
-          leadingIcon="pin"
+          onPress={() => togglePin(id)}
+          title={
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <MaterialCommunityIcons name="pin" size={24} color="#094568" />
+              <Text
+                style={{
+                  color: "#094568",
+                  marginLeft: 8,
+                  fontSize: 17,
+                  textAlign: "center",
+                }}
+              >
+                {[...tasks].find((task) => task.id === id)?.pinned ? "Unpin" : "Pin"}
+              </Text>
+            </View>
+          }
         />
         <Divider />
         <Menu.Item
-          onPress={() => deleteTask(index)}
-          title="Delete"
-          leadingIcon="delete"
+          onPress={() => deleteTask(id)}
+          title={
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingTop: 15,
+              }}
+            >
+              <MaterialCommunityIcons name="delete" size={24} color="red" />
+              <Text
+                style={{
+                  color: "red",
+                  marginLeft: 8,
+                  fontSize: 17,
+                  textAlign: "center",
+                }}
+              >
+                Delete
+              </Text>
+            </View>
+          }
         />
       </Menu>
     </View>

@@ -39,3 +39,12 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+
+# Yarn 4 config
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
